@@ -23,10 +23,9 @@ class SkeletonStructure:
         self._pose_results = self._pose.process(frame)
 
     def process(self,frame):
-        self._get_hands(frame)
-        self._get_pose(frame)
-
-        return {}
+        rgb_frame = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
+        self._get_hands(rgb_frame)
+        self._get_pose(rgb_frame)
 
     def _normalized_to_pixel_coordinates(self,normalized_x, normalized_y, image_width, image_height):
         x_px = min(int(normalized_x * image_width), image_width - 1)
@@ -90,12 +89,9 @@ def main():
             continue
 
         # Flip frame for mirror effect
-        # frame = cv.flip(frame, 1)
+        frame = cv.flip(frame, 1)
 
-        # Convert to RGB for MediaPipe
-        rgb_frame = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
-
-        results = skeleton.process(rgb_frame)
+        skeleton.process(frame)
 
         skeleton_img = skeleton.draw(frame)
 

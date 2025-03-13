@@ -16,5 +16,5 @@ def get_direct_url(youtube_url):
         result = subprocess.run(command, capture_output=True, text=True, check=True)
         return result.stdout.strip()  # Extracted direct URL
     except Exception as e:
-        print(f"Failed to get direct URL for {youtube_url}: {e}")
+        # print(f"Failed to get direct URL for {youtube_url}: {e}")
         return None

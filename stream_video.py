@@ -1,7 +1,7 @@
-import cv2
-from skeleton_structure import SkeletonStructure
+import cv2 as cv
+# from skeleton_structure import SkeletonStructure
 from Preprocessing.preprocess_url import get_direct_url
-
+import mediapipe as mp
 
 # ✅ Function to process YouTube video without downloading
 def process_video(url="https://www.youtube.com/watch?v=C37R_Ix8-qs"):
@@ -15,40 +15,55 @@ def process_video(url="https://www.youtube.com/watch?v=C37R_Ix8-qs"):
             return
 
         # Open the video stream with OpenCV
-        cap = cv2.VideoCapture(video_stream_url)
+        cap = cv.VideoCapture(video_stream_url)
 
-        skeleton_structure = SkeletonStructure()
+        # skeleton_structure = SkeletonStructure()
 
         if not cap.isOpened():
             print(f"❌ Failed to open video stream: {url}")
             return
 
         frame_count = 0
+        holistic = mp.solutions.holistic.Holistic(static_image_mode=False, min_detection_confidence=0.6,
+                                                  min_tracking_confidence=0.5)
+
+        mp_drawing = mp.solutions.drawing_utils
 
         while cap.isOpened():
             ret, frame = cap.read()
             if not ret:
                 break  # Stop when the video ends
 
-            skeleton_structure.process(frame)
-            skeleton_image = skeleton_structure.draw(frame)
+            # skeleton_structure.process(frame)
+            # skeleton_image = skeleton_structure.draw(frame)
 
             # ✅ Display the skeleton image
-            cv2.imshow("Skeleton", skeleton_image)
+            # cv.imshow("Skeleton", skeleton_image)
+
+            frame_rgb = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
+            results = holistic.process(frame_rgb)
+
+            # ✅ Draw the landmarks
+            mp_drawing.draw_landmarks(frame, results.face_landmarks, mp.solutions.holistic.FACEMESH_CONTOURS)
+            mp_drawing.draw_landmarks(frame, results.left_hand_landmarks, mp.solutions.holistic.HAND_CONNECTIONS)
+            mp_drawing.draw_landmarks(frame, results.right_hand_landmarks, mp.solutions.holistic.HAND_CONNECTIONS)
+            mp_drawing.draw_landmarks(frame, results.pose_landmarks, mp.solutions.holistic.POSE_CONNECTIONS)
+
 
             # ✅ Display the processed frame
-            # cv2.imshow("Processed Frame", frame)
+            cv.putText(frame, f"Frame: {frame_count}", (10, 30), cv.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+            cv.imshow("Processed Frame", frame)
 
             frame_count += 1
-            if frame_count % 30 == 0:
-                print(f"➡ Processed {frame_count} frames from {url}")
+
 
             # Press 'q' to exit early
-            if cv2.waitKey(1) & 0xFF == ord("q"):
+            if cv.waitKey(0) & 0xFF == ord("q"):
                 break
 
+        print(f"🎉 Processed {frame_count} frames from {url}")
         cap.release()
-        cv2.destroyAllWindows()
+        cv.destroyAllWindows()
         print(f"✅ Processing completed for {url}")
 
     except Exception as e:

@@ -2,7 +2,9 @@ import json
 import os
 import yt_dlp
 from tqdm import tqdm
+import argparse
 from dotenv import load_dotenv
+
 load_dotenv()
 
 OUTPUT_DIR = os.getenv("DOWNLOAD_DIR")
@@ -19,7 +21,7 @@ def download_video(url, output_file):
         ydl.download([url])
 
 
-def main(file_path):
+def main(file_path, data_type):
     with open(file_path, "r") as f:
         data = json.load(f)
 
@@ -35,13 +37,11 @@ def main(file_path):
                 continue
 
             label = video["label"]
-
-            file_dir = os.path.join(OUTPUT_DIR,"train/"+str(label))
+            file_dir = os.path.join(OUTPUT_DIR, f"{data_type}/{label}")
             os.makedirs(file_dir, exist_ok=True)
 
             url = video["url"]
             vid_name = str(downloaded)
-
             output_file = os.path.join(file_dir, vid_name + ".mp4")
 
             if os.path.exists(output_file):
@@ -67,5 +67,9 @@ def main(file_path):
 
 
 if __name__ == "__main__":
-    file_path = "Data/MS-ASL/MSASL_train.json"
-    main(file_path)
+    parser = argparse.ArgumentParser(description="Download videos from a JSON file containing video URLs.")
+    parser.add_argument("file_path", type=str, help="Path to the JSON file containing video URLs.")
+    parser.add_argument("data_type", type=str, help="Dataset type (e.g., train, test, val).")
+
+    args = parser.parse_args()
+    main(args.file_path, args.data_type)

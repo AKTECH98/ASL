@@ -6,4 +6,4 @@ Preprocessed/
 temp_videos/
 Output/
 logs/
-*/__pychache__/
+__pycache__/

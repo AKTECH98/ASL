@@ -1,0 +1,21 @@
+data:
+  data_path: "Preprocessed/Data"
+  val_ratio: 0.2
+  batch_size: 64
+
+model:
+  type: "gru"
+  input_size: 1662
+  hidden_size: 96
+  bidirectional: false
+  dropout: 0
+  num_layers: 1
+
+train:
+  epochs: 100
+  learning_rate: 0.001
+  patience: 20
+
+output:
+  dir: "Output"
+  note: "gru_experiment"

@@ -1,0 +1,21 @@
+data:
+  data_path: "Preprocessed/Data45"
+  val_ratio: 0.2
+  batch_size: 32
+
+model:
+  type: "attention"
+  input_size: 126
+  hidden_size: 64
+  bidirectional: True
+  dropout: 0.5
+  num_layers: 1
+
+train:
+  epochs: 200
+  learning_rate: 0.001
+  patience: 15
+
+output:
+  dir: "Output"
+  note: "Data45_hand_features"

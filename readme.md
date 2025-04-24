@@ -1,3 +1,7 @@
+# Model Selection and Research
+Point Net - https://stanford.edu/~rqi/pointnet/  (Point Cloud Classification) <br>
+Point Net Youtube - https://www.youtube.com/watch?v=GGxpqfTvE8c <br>
+
 # Dataset
 1. Video Dataset : https://www.youtube.com/@aslu/videos
 2. MS-ASL - Open Dataset
@@ -26,3 +30,6 @@ Min Duration: 0.9
 Max Duration: 9.209200000000001
 Unique Resolutions: ['320x218', '320x240', '480x360', '540x360', '640x360', '320x234', '548x360']
 
+Clean Val Data : Videos added: 3296
+Clean Test Data : Videos added: 2847
+Clean Train Data : Videos added: 10025

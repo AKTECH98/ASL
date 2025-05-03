@@ -17,5 +17,5 @@ train:
   patience: 15
 
 output:
-  dir: "Output"
+  dir: "Output/Models/Attention"
   note: "Data45_hand_features"

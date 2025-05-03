@@ -6,6 +6,7 @@ from tqdm import tqdm
 from collections import Counter, defaultdict
 import argparse
 import contextlib
+import yaml
 
 from utils import get_clipped_segment
 from Modules.skeleton import SkeletonLandmarks
@@ -29,6 +30,7 @@ def filter_data(data, min_samples=1, banned_ids=None):
     return [s for s in filtered if s['label'] in valid_labels]
 
 def save_json(data, path):
+    """Save data to JSON file with proper directory creation."""
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, 'w') as f:
         json.dump(data, f, indent=2)
@@ -37,10 +39,13 @@ def load_json(path):
     with open(path, 'r') as f:
         return json.load(f)
 
-def preprocess_dataset(data, output_dir, show_video=False):
+def preprocess_dataset(data, config):
+    """Preprocess the dataset according to configuration."""
     skeleton = SkeletonLandmarks()
     label_counts = defaultdict(int)
     invalid_data = []
+    output_dir = os.path.join(config['output']['dir'], f"Data{config['input']['min_samples']}")
+    os.makedirs(output_dir, exist_ok=True)
 
     for video in tqdm(data, desc="Extracting features"):
         try:
@@ -48,12 +53,12 @@ def preprocess_dataset(data, output_dir, show_video=False):
                 video_path = get_clipped_segment(video["url"], video["start_time"], video["end_time"])
 
             if not video_path or not os.path.exists(video_path):
-                print(f"[SKIP] Invalid video path: {video_path}")
+                invalid_data.append(video)
                 continue
 
             cap = cv.VideoCapture(video_path)
             if not cap.isOpened():
-                print(f"[ERROR] Couldn't open video: {video_path}")
+                invalid_data.append(video)
                 continue
 
             sequence = []
@@ -66,7 +71,7 @@ def preprocess_dataset(data, output_dir, show_video=False):
                 features = skeleton.get_features()
                 if features is not None:
                     sequence.append(features)
-                    if show_video:
+                    if config['processing']['show_video']:
                         canvas = np.zeros_like(frame)
                         vis = skeleton.draw_landmarks(canvas)
                         cv.putText(frame, f"{video['label_class']}", (10, 30), cv.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
@@ -77,7 +82,7 @@ def preprocess_dataset(data, output_dir, show_video=False):
                             break
 
             cap.release()
-            if show_video:
+            if config['processing']['show_video']:
                 cv.destroyAllWindows()
 
             if sequence:
@@ -108,25 +113,36 @@ def preprocess_dataset(data, output_dir, show_video=False):
 
 def main():
     parser = argparse.ArgumentParser(description="MS-ASL Dataset Preprocessing")
-    parser.add_argument("--min_samples", type=int, default=30, help="Minimum samples per label")
-    parser.add_argument("--input_file", type=str, default="Data/MS-ASL-Clean-Data/clean_data.json", help="Raw input JSON")
-    parser.add_argument("--output_dir", type=str, default="Preprocessed", help="Output directory")
-    parser.add_argument("--show_video", action="store_true", help="Show video preview during preprocessing")
+    parser.add_argument("--config", type=str, default="config/preprocess.yaml", help="Path to config file")
 
     args = parser.parse_args()
-    output_json = os.path.join(args.output_dir, f"preprocessed_data{args.min_samples}.json")
-    sequence_dir = os.path.join(args.output_dir, f"Data{args.min_samples}")
+
+    # Load configuration
+    with open(args.config, "r") as f:
+        config = yaml.safe_load(f)
+
+    # Override show_video from command line if specified
+    if args.show_video:
+        config['processing']['show_video'] = True
+
+    # Create necessary directories
+    os.makedirs(config['output']['dir'], exist_ok=True)
+
+    # Load and process data
+    input_json = os.path.join(config['input']['data_path'])
+    output_json = os.path.join(config['output']['dir'], f"preprocessed_data{config['input']['min_samples']}.json")
 
     if os.path.exists(output_json):
         print(f"📂 Loading existing cleaned data: {output_json}")
         data = load_json(output_json)
     else:
-        print("🔎 Filtering and saving preprocessed dataset...")
-        clean_data = load_json(args.input_file)
-        data = filter_data(clean_data, min_samples=args.min_samples)
+        clean_data = load_json(input_json)
+        data = filter_data(clean_data, 
+                         min_samples=config['input']['min_samples'],
+                         banned_ids=config['input']['banned_ids'])
         save_json(data, output_json)
 
-    preprocess_dataset(data, sequence_dir, show_video=args.show_video)
+    preprocess_dataset(data, config)
 
 if __name__ == "__main__":
     main()

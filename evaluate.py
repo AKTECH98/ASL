@@ -61,8 +61,8 @@ def evaluate(model_path, data_path, batch_size=32, val_ratio=0.2):
     print(f"📝 Report saved to {report_path}")
 
     cm = confusion_matrix(all_labels, all_preds)
-    cm_path = os.path.splitext(model_path)[0] + "_cmatrix.png"
-    plot_confusion_matrix(cm, LABEL_MAP, save_path=cm_path)
+    cm_path = os.path.splitext(model_path)[0] + "_cmatrix_check.png"
+    plot_confusion_matrix(cm, LABEL_MAP.values(), save_path=cm_path)
     print(f"🧩 Confusion matrix saved to {cm_path}")
 
 if __name__ == "__main__":

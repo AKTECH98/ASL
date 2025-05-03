@@ -26,11 +26,11 @@ def main():
     ])
 
     # # Evaluate
-    # subprocess.run([
-    #     "python", "evaluate.py",
-    #     "--config", args.config,
-    #     "--exp_name", exp_name
-    # ])
+    subprocess.run([
+        "python", "evaluate.py",
+        "--config", args.config,
+        "--exp_name", exp_name
+    ])
 
 if __name__ == "__main__":
     main()

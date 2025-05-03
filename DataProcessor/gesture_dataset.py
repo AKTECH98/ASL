@@ -4,7 +4,7 @@ import torch
 from torch.utils.data import Dataset
 from torch.nn.utils.rnn import pad_sequence
 
-class GestureDataset(Dataset):
+class GestureDataset(Dataset,hands=True):
     def __init__(self, root_dir, label_map=None):
         self.samples = []
         self.labels = []
@@ -36,12 +36,13 @@ class GestureDataset(Dataset):
 
     def __getitem__(self, idx):
 
-        # only hand features the last 42x3 freatures:
-        hand_features = np.load(self.samples[idx])[:, -126:]
+        if self.hands:
+            # only hand features the last 42x3 freatures:
+            features = np.load(self.samples[idx])[:, -126:]
+        else:
+            features = np.load(self.samples[idx])
 
-
-
-        x = torch.tensor(hand_features, dtype=torch.float32)
+        x = torch.tensor(features, dtype=torch.float32)
 
         # x = torch.tensor(np.load(self.samples[idx]), dtype=torch.float32)
         y = torch.tensor(self.labels[idx], dtype=torch.long)

@@ -43,6 +43,8 @@ def main():
     vs = VideoStream(src=args.camera)
     print("🚀 Starting gesture recognition...")
 
+    out = None
+
     frame_count = 0
     start_time = cv.getTickCount()
     while True:
@@ -61,8 +63,8 @@ def main():
             canvas = skeleton.draw_landmarks(canvas)
             cv.imshow("Landmarks", canvas)
 
-
-            if len(frame_buffer) == args.sequence_length and frame_count % 5 == 0:
+            predict = False
+            if len(frame_buffer) == args.sequence_length:
                 sequence = np.array(frame_buffer, dtype=np.float32)
                 with torch.no_grad():
                     x = torch.tensor(sequence).unsqueeze(0).to(device)
@@ -72,12 +74,30 @@ def main():
                     pred = torch.argmax(probs, dim=1).item()
                     label = LABEL_MAP[pred]
                     confidence = probs[0][pred].item()
-                    cv.putText(frame, f'{label} ({confidence:.2f})', (10, 40),
-                                cv.FONT_HERSHEY_SIMPLEX, 1.2, (0, 255, 0), 2)
+                    if confidence>0.5:
+                        cv.putText(frame, f'{label} ({confidence:.2f})', (10, 40),
+                                    cv.FONT_HERSHEY_SIMPLEX, 1.2, (0, 255, 0), 2)
+
+
+                        predict = True
+
                     print(f"Prediction: {label} ({confidence:.2f})")
 
 
+
+                    frame_count += 1
+
                 frame_buffer.clear()
+
+            compare_frames = np.hstack((frame, canvas))
+
+
+            # cv.imwrite("Output/Frames/gesture_frame_{}.jpg".format(frame_count), compare_frames)
+            # out.write(compare_frames)
+            #
+            # if predict:
+            #     for _ in range(20):
+            #         out.write(compare_frames)
 
         end_time = cv.getTickCount()
 
@@ -93,6 +113,9 @@ def main():
 
     vs.stop()
     cv.destroyAllWindows()
+    if out is not None:
+        out.release()
+        print("Output video saved as 'Output/compare_frames_output.mp4'")
 
 if __name__ == "__main__":
     main()

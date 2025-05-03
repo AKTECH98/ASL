@@ -5,7 +5,7 @@ data:
 
 model:
   type: "gru"
-  input_size: 1662
+  input_size: 162
   hidden_size: 96
   bidirectional: false
   dropout: 0
@@ -17,5 +17,5 @@ train:
   patience: 20
 
 output:
-  dir: "Output"
+  dir: "Output/Models/LSTM"
   note: "gru_experiment"

@@ -1,0 +1,12 @@
+input:
+  data_path: "Data/MS-ASL-Clean-Data/clean_data.json"
+  min_samples: 30 # Minimum samples per class
+  banned_ids: [46, 32, 36, 18, 88, 172, 9] # Signer IDs to exclude
+
+output:
+  dir: "Preprocessed"
+  invalid_data_file: "invalid_data.json"
+
+processing:
+  show_video: false # Show video preview during processing
+  save_metadata: true # Save processing metadata
